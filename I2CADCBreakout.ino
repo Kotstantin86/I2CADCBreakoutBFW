@@ -1,39 +1,33 @@
 #include <Wire.h>
-#include <LiquidCrystal.h>
 
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+#define ADDRESS 0x4D // MCP3221-A5 address in 7bit format (There are other addresses available)
 
-#define ADDRESS 0x4D // MCP3221 A5 address 7bit format
-
-float vRef = 4110; //vRef reading in mV
+float vRef = 4107; //vRef reading in mV - Check This WIth DMM
 float stepSize = vRef/4096; //Each step = our vRef/ number of steps in 12bit
 
 void setup(){
-  Wire.begin(); //conects I2C
-  lcd.begin(20,4);
+  Wire.begin(); //Initialize I2C comms
+  Serial.begin(9600); //Initialize Serial comms
 }
 
 void loop(){
-  byte adc_high;
-  byte adc_low;
+  byte adc_MSB;
+  byte adc_LSB;
   int adcRaw;
   float miliVolts;
   
    Wire.requestFrom(ADDRESS, 2);        //requests 2 bytes
    while(Wire.available() < 2);         //while two bytes to receive
     
-   adc_high = Wire.read();           
-   adc_low = Wire.read();
-   adcRaw = (adc_high * 256) + adc_low;
+   adc_MSB = Wire.read();           
+   adc_LSB= Wire.read();
+   adcRaw = (adc_MSB * 256) + adc_LSB;
    miliVolts = adcRaw * stepSize;
-   lcd.setCursor(0,0);
-   lcd.print("ADC RAW: ");
-   lcd.print(adcRaw);
-   lcd.setCursor(0,1);
-   lcd.print("Voltage: ");
-   lcd.print(miliVolts/1000);
-   lcd.setCursor(0,2);
-   lcd.print("mV/Step      : ");
-   lcd.print(stepSize,4);
+   Serial.print("ADC RAW: ");
+   Serial.println(adcRaw);
+   Serial.print("Voltage: ");
+   Serial.println(miliVolts/1000);
+   Serial.print("mV/Step      : ");
+   Serial.println(stepSize,4);
    delay(1000);
 }
